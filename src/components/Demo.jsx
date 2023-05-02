@@ -49,7 +49,9 @@ if(artclieFromLocalStorage) {
 
   return (
     <section className="mt-16 w-full max-w-xl">
+
         {/* Search */ }
+        
         <div className="flex flex-col w-full gap-2">
             <form 
             className="relative flex justify-center items-center" 
@@ -68,7 +70,9 @@ if(artclieFromLocalStorage) {
                 <p>↵</p>
                 </button>
             </form>
+
         { /*Browese URL Histrory */}
+
         <div className="flex flex-col gap-1 max-h-60 overflow-y-auto">
             {allArticles.map((item, index) => (
                 <div 
@@ -93,6 +97,7 @@ if(artclieFromLocalStorage) {
         </div>
         </div>
         { /*Display Result */}
+
         <div className="my-10 max-w-full flex justify-center items-center">
             {isFetching ? (
                 <img src={loader} alt="loader" className="w-20 object-contain" />
