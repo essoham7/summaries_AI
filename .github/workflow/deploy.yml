@@ -1,44 +1,51 @@
-name: Deploy in qa
-
+name: Deploy
 
 on:
   push:
-    branches: [ "minor" ]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
+    branches:
+      - main
 
 jobs:
-  deploy:
+  build:
+    name: Build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [16.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v2
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: Setup Node
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16
 
-      - name: Install yarn
-        run: npm install -g yarn 
+      - name: Install dependencies
+        uses: bahmutov/npm-install@v1
 
-      - name: Install npm dependencies
-        run: yarn
+      - name: Build project
+        run: npm run build
 
-      - name: Project Linting
-        run: yarn lint
-
-      - name: Build react vite project
-        run: yarn build
-
-      - name: Deploy to Cloudflare Workers with Wrangler
-        uses: cloudflare/wrangler-action@2.0.0
+      - name: Upload production-ready build files
+        uses: actions/upload-artifact@v2
         with:
-          apiToken: ${{ secrets.CF_DEPLOY_TO_PAGES_API_TOKEN }}
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          command: pages publish dist --summaries-ai
+          name: production-files
+          path: ./dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: production-files
+          path: ./dist
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
